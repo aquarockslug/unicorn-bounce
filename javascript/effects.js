@@ -1,6 +1,7 @@
 const confetti = [];
 const randBetween = (a, b) => a + Math.random() * (b - a);
-const randomRainbow = () => colors.rainbow[(Math.random() * colors.rainbow.length) | 0];
+const randomRainbow = () =>
+	colors.rainbow[(Math.random() * colors.rainbow.length) | 0];
 
 function confettiBurst(pos, count, speed) {
 	if (confetti.length > 500) return;
@@ -68,8 +69,11 @@ const hasAudio = typeof zzfx === 'function';
 function playS(params) {
 	if (hasAudio) zzfx(...params);
 }
-function playBounce() {
-	playS(settings.sfx.bounce);
+function playScreenBounce() {
+	playS(settings.sfx.screenBounce);
+}
+function playWallBounce() {
+	playS(settings.sfx.wallBounce);
 }
 function playPowerup() {
 	playS(settings.sfx.powerup);
@@ -99,7 +103,10 @@ function celebrateFill() {
 function drawCelebration(time, celebrateTime) {
 	const msg = 'YOU FILLED THE BOARD!';
 	const fadeIn = Math.min(1, celebrateTime / 0.4);
-	const fadeOut = celebrateTime > 4.4 ? Math.max(0, (5 - celebrateTime) / 0.6) : 1;
+	const fadeOut =
+		celebrateTime > 4.4
+			? Math.max(0, (settings.celebrateLength - celebrateTime) / 0.6)
+			: 1;
 	const alpha = fadeIn * fadeOut;
 	if (!alpha) return;
 	const size = 34 + Math.sin(time * 9) * 5;
@@ -123,3 +130,4 @@ function drawCelebration(time, celebrateTime) {
 	ctx.fillText(msg, pos.x, pos.y);
 	ctx.restore();
 }
+

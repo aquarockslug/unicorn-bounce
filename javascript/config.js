@@ -6,6 +6,7 @@ settings = {
 	ribbonThickness: 1,
 	fillThreshold: 0.99,
 	celebrationSpeed: 0.2,
+	celebrateLength: 5,
 	unicornVelocity: vec2(3, 0),
 	unicornRadius: 20,
 	unicornSpin: 1,
@@ -25,7 +26,8 @@ settings = {
 	},
 	// biome-ignore format: sfx
 	sfx: {
-		bounce: [0.25, 0.08, 300, 0.005, 0.04, 0.09, 1, 1, -80, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		wallBounce: [,,410,.02,.01,.03,,3.2,,48,-28,.01,,,6.1,,,.9,.02],
+		screenBounce: [.8,,714,.02,.03,.01,4,1.1,6,,25,.11,,,,,,.84,,,-1344],
 		powerup: [0.6, 0.05, 660, 0.01, 0.08, 0.25, 1, 1, 140, 80, 0, 0, 0, 0, 0, 0, 0, 1],
 		fanfare: {
 			notes: [523.25, 659.25, 783.99, 1046.5, 1318.5],
@@ -39,8 +41,8 @@ colors = {
 	background: C(1, 1, 1),
 	sky: { top: C(0.29, 0.55, 0.86), bottom: C(0.85, 0.94, 1) },
 	unicorn: C(1, 0.41, 0.71),
-	wall: C(0.2, 0.2, 0.25),
-	draft: C(1.0, 0.1, 0.1, 0.6),
+	wall: C(1, 0.41, 0.71),
+	draft: C(1.0, 1.0, 1.0, 0.5),
 	powerup: C(1, 0.85, 0.15),
 	hudPanel: C(0.12, 0.12, 0.16, 0.75),
 	rainbow: [

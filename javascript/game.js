@@ -3,7 +3,10 @@ function closestPointOnSegment(p, a, b) {
 	const dy = b.y - a.y;
 	const len2 = dx * dx + dy * dy;
 	if (!len2) return a;
-	const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2));
+	const t = Math.max(
+		0,
+		Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2),
+	);
 	return vec2(a.x + dx * t, a.y + dy * t);
 }
 
@@ -18,7 +21,11 @@ function collideSegment(uni, a, b) {
 	const pos = vec2(closest.x + ux * uni.radius, closest.y + uy * uni.radius);
 	const dot = uni.vel.x * ux + uni.vel.y * uy;
 	return dot < -0.001
-		? { ...uni, pos, vel: vec2(uni.vel.x - 2 * dot * ux, uni.vel.y - 2 * dot * uy) }
+		? {
+				...uni,
+				pos,
+				vel: vec2(uni.vel.x - 2 * dot * ux, uni.vel.y - 2 * dot * uy),
+			}
 		: { ...uni, pos };
 }
 
@@ -26,7 +33,10 @@ function updateUnicorn(unicorn, walls, dt) {
 	const { x: maxX, y: maxY } = settings.screenResolution;
 	const speed = dt * 60;
 	const vel = unicorn.vel;
-	const pos = vec2(unicorn.pos.x + vel.x * speed, unicorn.pos.y + vel.y * speed);
+	const pos = vec2(
+		unicorn.pos.x + vel.x * speed,
+		unicorn.pos.y + vel.y * speed,
+	);
 	let next = { ...unicorn, pos, vel };
 	if (pos.x < 0 || pos.x > maxX) {
 		next.vel = vec2(-vel.x, vel.y);
@@ -119,6 +129,12 @@ unicornImage.src =
 			'd="m349.62561,438.052338l-334.62561,-28.253998c45.526749,-55.763336 113.677917,-90.203674 141.686264,-150.818481c39.628311,-88.49614 108.150955,-117.372101 166.645432,-165.83905c54.830353,-22.069206 83.876038,-27.477837 140.514404,-26.76091l29.543549,13.620171l15.686523,16.077881l2.549744,6.518074c-1.892761,-5.471275 152.635925,-102.626754 105.635925,-67.626755l-87.265198,112.135132c14.737732,73.344193 21.418945,143.32608 44.213135,220.03302c0,0 0.83252,27.074341 -11.454651,39.857819c-12.287109,12.783936 -61.629211,20.330841 -61.629211,20.330841c0,0 -25.123291,-14.450989 -28.291168,-23.791229c-3.167816,-9.34021 4.775818,-21.660858 4.775818,-21.660858c-27.362396,-38.126129 -55.216675,-56.100616 -103.171478,-86.284515c-21.436981,36.293121 -40.464661,83.408447 -22.813324,162.46286l-2.000153,-20z"/></g></svg>',
 	);
 
+// TODO make the unicorn faster every time it fills the board
+function nextBoard() {
+	console.log('next board');
+	gameInit();
+}
+
 function gameInit() {
 	gridSize = vec2(
 		Math.floor(settings.screenResolution.x / settings.squareSize.x),
@@ -158,7 +174,10 @@ function gameInit() {
 function gameUpdate(dt) {
 	const mouse = mouseIsDown(0);
 	if (mouse && !gs.drawing)
-		gs.drawing = { start: screenToWorld(mousePos), end: screenToWorld(mousePos) };
+		gs.drawing = {
+			start: screenToWorld(mousePos),
+			end: screenToWorld(mousePos),
+		};
 	else if (mouse) gs.drawing.end = screenToWorld(mousePos);
 	else if (gs.drawing) {
 		if (gs.drawing.start.distance(gs.drawing.end) > settings.minWallLength)
@@ -172,15 +191,22 @@ function gameUpdate(dt) {
 	if (unicorn.vel.x !== prevVel.x || unicorn.vel.y !== prevVel.y) {
 		if (removed.length) {
 			confettiBurst(unicorn.pos, 14, 140);
-			playBounce();
-		} else confettiBurst(unicorn.pos, 7, 80);
+			playWallBounce();
+		} else {
+			confettiBurst(unicorn.pos, 7, 80);
+			playScreenBounce();
+		}
 	}
 
-	const baseSpeed = Math.hypot(settings.unicornVelocity.x, settings.unicornVelocity.y);
+	const baseSpeed = Math.hypot(
+		settings.unicornVelocity.x,
+		settings.unicornVelocity.y,
+	);
 	const speed = Math.hypot(unicorn.vel.x, unicorn.vel.y);
 	const spinTarget = settings.unicornSpin * (speed / baseSpeed);
 	let spin = gs.unicorn.spin;
-	if (prevVel.x * unicorn.vel.x + prevVel.y * unicorn.vel.y < -0.001) spin = -spin;
+	if (prevVel.x * unicorn.vel.x + prevVel.y * unicorn.vel.y < -0.001)
+		spin = -spin;
 	spin = Math.sign(spin || 1) * spinTarget;
 	const angle = gs.unicorn.angle + spin * dt;
 
@@ -219,7 +245,10 @@ function gameUpdate(dt) {
 		const t = i / steps;
 		painted += paintRibbon(
 			gs.grid,
-			vec2(from.x + (unicorn.pos.x - from.x) * t, from.y + (unicorn.pos.y - from.y) * t),
+			vec2(
+				from.x + (unicorn.pos.x - from.x) * t,
+				from.y + (unicorn.pos.y - from.y) * t,
+			),
 			brush,
 		);
 	}
@@ -240,9 +269,13 @@ function gameUpdate(dt) {
 			justFilled = true;
 		}
 	}
+	filled = true;
+	// justFilled = true;
 	if (justFilled) celebrateFill();
-	if (filled && Math.random() < dt * 20) confettiRain();
+	if (filled && Math.random() < dt * 30) confettiRain();
 	const celebrateTime = filled ? gs.celebrateTime + dt : 0;
+	console.log('🪚 gs.celebrateTime:', gs.celebrateTime);
+	if (celebrateTime >= gs.celebrateLength) nextBoard();
 
 	gs = {
 		...gs,
@@ -259,18 +292,18 @@ function gameUpdate(dt) {
 	};
 }
 
-const powerupGlow = new Color(colors.powerup.r, colors.powerup.g, colors.powerup.b, 0.3);
+const powerupGlow = new Color(
+	colors.powerup.r,
+	colors.powerup.g,
+	colors.powerup.b,
+	0.3,
+);
 const boostGlow = new Color(1, 0.41, 0.71, 0.35);
 
 function drawPowerup(p, time) {
 	const pulse = 1 + Math.sin(time * 6) * 0.15;
 	drawCircle(p.pos, p.radius * 1.7, powerupGlow);
 	drawCircle(p.pos, p.radius * pulse, colors.powerup);
-	if (Math.sin(time * 5) > 0) {
-		const w = p.radius * 0.45;
-		drawLine(vec2(p.pos.x - w, p.pos.y), vec2(p.pos.x + w, p.pos.y), colors.background, 4);
-		drawLine(vec2(p.pos.x, p.pos.y - w), vec2(p.pos.x, p.pos.y + w), colors.background, 4);
-	}
 }
 
 function gameRenderPost() {
@@ -297,10 +330,17 @@ function gameRenderPost() {
 		}
 	}
 
-	for (const wall of gs.walls)
-		drawLine(wall.start, wall.end, colors.wall, settings.wallWidth);
+	for (const wall of gs.walls) {
+		drawLine(wall.start, wall.end, C(1, 1, 1), settings.wallWidth);
+		drawLine(wall.start, wall.end, colors.wall, settings.wallWidth / 2);
+	}
 	if (gs.drawing)
-		drawLine(gs.drawing.start, gs.drawing.end, colors.draft, settings.draftWidth);
+		drawLine(
+			gs.drawing.start,
+			gs.drawing.end,
+			colors.draft,
+			settings.draftWidth,
+		);
 
 	const { pos, radius } = gs.unicorn;
 	if (gs.brushTime > 0) drawCircle(pos, radius * 1.6, boostGlow);
@@ -311,7 +351,11 @@ function gameRenderPost() {
 		ctx.translate(pos.x, pos.y);
 		ctx.rotate(gs.unicorn.angle);
 		ctx.scale(scale, scale);
-		ctx.drawImage(unicornSprite, -unicornSprite.width / 2, -unicornSprite.height / 2);
+		ctx.drawImage(
+			unicornSprite,
+			-unicornSprite.width / 2,
+			-unicornSprite.height / 2,
+		);
 		ctx.restore();
 	}
 	for (const powerup of gs.powerups) drawPowerup(powerup, gs.time);
@@ -326,8 +370,11 @@ function gameRenderPost() {
 			'right',
 			colors.hudPanel,
 		);
+	let fillPercent = Math.floor(
+		(gs.filledCount / (gridSize.x * gridSize.y)) * 100,
+	);
 	drawText(
-		`${gs.filledCount} / ${gridSize.x * gridSize.y}`,
+		`${fillPercent}% filled`,
 		vec2(10, 10),
 		colors.background,
 		24,
