@@ -2,8 +2,8 @@ const C = (...a) => new Color(...a);
 
 settings = {
 	screenResolution: vec2(640, 480),
-	squareSize: vec2(6),
-	ribbonThickness: 1,
+	squareSize: vec2(4),
+	ribbonThickness: 2,
 	fillThreshold: 0.99,
 	celebrationSpeed: 0.2,
 	celebrateLength: 5,
@@ -15,9 +15,11 @@ settings = {
 	draftWidth: 4,
 	powerupRadius: 16,
 	powerupDuration: 8,
-	powerupSpawnInterval: 5,
-	powerupBrushScale: 3,
+	powerupSpawnInterval: 6,
+	powerupBrushScale: 2,
 	maxPowerups: 2,
+	cellDecayRate: 0.00001,
+	cellDecayEdgeBoost: 1000,
 	escher: {
 		enabled: true,
 		color1: '#562a51',
@@ -36,7 +38,8 @@ settings = {
 	sfx: {
 		wallBounce: [,,410,.02,.01,.03,,3.2,,48,-28,.01,,,6.1,,,.9,.02],
 		screenBounce: [.8,,714,.02,.03,.01,4,1.1,6,,25,.11,,,,,,.84,,,-1344],
-		reset: [,,606,.06,.22,.22,,2,2,,,,.04,,4.5,,,.57,.21,,-1389],
+		reset: [.8,,429,.01,.01,.01,3,1.4,12,,266,.05,,,,,.07,.67,.03,,379],
+		draw: [2.1,,551,.02,.03,.04,,1.1,,-33,,,,,,,.01,.63,.03],
 		powerup: [0.6, 0.05, 660, 0.01, 0.08, 0.25, 1, 1, 140, 80, 0, 0, 0, 0, 0, 0, 0, 1],
 		fanfare: {
 			notes: [523.25, 659.25, 783.99, 1046.5, 1318.5],

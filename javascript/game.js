@@ -147,6 +147,8 @@ function gameInit() {
 	);
 	const grid = Grid(gridSize, colors.background);
 	const board = (gs?.board ?? -1) + 1;
+	for (let i = 0; i < board; i++)
+		setTimeout(() => playS(settings.sfx.reset), i * 150);
 	const speedMultiplier = 1 + board * 0.5;
 	const prev = gs?.unicorn;
 	const baseVel = settings.unicornVelocity;
@@ -159,7 +161,9 @@ function gameInit() {
 	const pos = prev ? prev.pos : grid.center();
 	const angle = prev ? prev.angle : 0;
 	const scheme =
-		settings.backgroundSchemes[board % settings.backgroundSchemes.length];
+		settings.backgroundSchemes[
+			Math.floor(Math.random() * settings.backgroundSchemes.length)
+		];
 	gs = {
 		grid,
 		walls: [],
@@ -198,8 +202,10 @@ function gameUpdate(dt) {
 		};
 	else if (mouse) gs.drawing.end = screenToWorld(mousePos);
 	else if (gs.drawing) {
-		if (gs.drawing.start.distance(gs.drawing.end) > settings.minWallLength)
+		if (gs.drawing.start.distance(gs.drawing.end) > settings.minWallLength) {
 			gs.walls.push(gs.drawing);
+			playS(settings.sfx.draw);
+		}
 		gs.drawing = null;
 	}
 
@@ -286,6 +292,22 @@ function gameUpdate(dt) {
 			filled = true;
 			justFilled = true;
 		}
+	}
+	for (const cell of gs.grid.values()) {
+		if (cell.color === colors.background) continue;
+		const neighbors = [
+			gs.grid.cellAt(cell.col - 1, cell.row),
+			gs.grid.cellAt(cell.col + 1, cell.row),
+			gs.grid.cellAt(cell.col, cell.row - 1),
+			gs.grid.cellAt(cell.col, cell.row + 1),
+		];
+		const exposed = neighbors.some((n) => !n || n.color === colors.background);
+		const decayChance =
+			settings.cellDecayRate *
+			(exposed ? settings.cellDecayEdgeBoost : 1) *
+			(gs.board + 1) *
+			dt;
+		if (Math.random() < decayChance) cell.color = colors.background;
 	}
 	if (justFilled) celebrateFill();
 	if (filled && Math.random() < dt * 30) confettiRain();

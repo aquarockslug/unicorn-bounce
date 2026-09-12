@@ -102,7 +102,9 @@ function celebrateFill() {
 
 function drawCelebration(time, celebrateTime) {
 	const msg =
-		celebrateTime < celebrateTime / 2 ? 'YOU FILLED THE BOARD!' : 'SPEED UP!';
+		celebrateTime < settings.celebrateLength / 2
+			? 'YOU FILLED THE BOARD!'
+			: 'SPEED UP!';
 	const fadeIn = Math.min(1, celebrateTime / 0.4);
 	const fadeOut =
 		celebrateTime > 4.4
