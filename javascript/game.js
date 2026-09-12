@@ -1,3 +1,10 @@
+let gs = null;
+
+const resumeAudio = () => {
+	if (typeof zzfxX !== 'undefined') zzfxX.resume();
+};
+window.addEventListener('pointerdown', resumeAudio);
+
 function closestPointOnSegment(p, a, b) {
 	const dx = b.x - a.x;
 	const dy = b.y - a.y;
@@ -129,9 +136,7 @@ unicornImage.src =
 			'd="m349.62561,438.052338l-334.62561,-28.253998c45.526749,-55.763336 113.677917,-90.203674 141.686264,-150.818481c39.628311,-88.49614 108.150955,-117.372101 166.645432,-165.83905c54.830353,-22.069206 83.876038,-27.477837 140.514404,-26.76091l29.543549,13.620171l15.686523,16.077881l2.549744,6.518074c-1.892761,-5.471275 152.635925,-102.626754 105.635925,-67.626755l-87.265198,112.135132c14.737732,73.344193 21.418945,143.32608 44.213135,220.03302c0,0 0.83252,27.074341 -11.454651,39.857819c-12.287109,12.783936 -61.629211,20.330841 -61.629211,20.330841c0,0 -25.123291,-14.450989 -28.291168,-23.791229c-3.167816,-9.34021 4.775818,-21.660858 4.775818,-21.660858c-27.362396,-38.126129 -55.216675,-56.100616 -103.171478,-86.284515c-21.436981,36.293121 -40.464661,83.408447 -22.813324,162.46286l-2.000153,-20z"/></g></svg>',
 	);
 
-// TODO make the unicorn faster every time it fills the board
 function nextBoard() {
-	console.log('next board');
 	gameInit();
 }
 
@@ -141,34 +146,47 @@ function gameInit() {
 		Math.floor(settings.screenResolution.y / settings.squareSize.y),
 	);
 	const grid = Grid(gridSize, colors.background);
+	const board = (gs?.board ?? -1) + 1;
+	const speedMultiplier = 1 + board * 0.5;
+	const prev = gs?.unicorn;
+	const baseVel = settings.unicornVelocity;
+	const baseSpeed = Math.hypot(baseVel.x, baseVel.y) || 1;
+	const prevSpeed = prev ? Math.hypot(prev.vel.x, prev.vel.y) : baseSpeed;
+	const velScale = (baseSpeed * speedMultiplier) / prevSpeed;
+	const vel = prev
+		? vec2(prev.vel.x * velScale, prev.vel.y * velScale)
+		: vec2(baseVel.x * speedMultiplier, baseVel.y * speedMultiplier);
+	const pos = prev ? prev.pos : grid.center();
+	const angle = prev ? prev.angle : 0;
+	const scheme =
+		settings.backgroundSchemes[board % settings.backgroundSchemes.length];
 	gs = {
 		grid,
 		walls: [],
 		drawing: null,
-		lastRibbonPos: grid.center(),
+		lastRibbonPos: pos,
 		time: 0,
 		filled: false,
 		filledCount: 0,
 		celebrateTime: 0,
+		celebrateLength: settings.celebrateLength,
 		powerups: [],
 		spawnTimer: 0,
 		brushTime: 0,
+		board,
 		unicorn: {
-			pos: grid.center(),
-			vel: settings.unicornVelocity,
+			pos,
+			vel,
 			radius: settings.unicornRadius,
-			angle: 0,
+			angle,
 			spin: settings.unicornSpin,
 		},
 	};
 	cameraPos = grid.center();
 	setCanvasFixedSize(settings.screenResolution);
-	initEscherBackground();
-	const resumeAudio = () => {
-		if (typeof zzfxX !== 'undefined') zzfxX.resume();
-		window.removeEventListener('pointerdown', resumeAudio);
-	};
-	window.addEventListener('pointerdown', resumeAudio);
+	initEscherBackground(scheme);
+	mouseBtn.fill(false);
+	confetti.length = 0;
 }
 
 function gameUpdate(dt) {
@@ -269,13 +287,13 @@ function gameUpdate(dt) {
 			justFilled = true;
 		}
 	}
-	filled = true;
-	// justFilled = true;
 	if (justFilled) celebrateFill();
 	if (filled && Math.random() < dt * 30) confettiRain();
 	const celebrateTime = filled ? gs.celebrateTime + dt : 0;
-	console.log('🪚 gs.celebrateTime:', gs.celebrateTime);
-	if (celebrateTime >= gs.celebrateLength) nextBoard();
+	if (celebrateTime >= gs.celebrateLength) {
+		nextBoard();
+		return;
+	}
 
 	gs = {
 		...gs,

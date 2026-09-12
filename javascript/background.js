@@ -54,14 +54,15 @@ function generateEscherPattern(target, options) {
 const escherBackground = document.createElement('canvas');
 let escherBackgroundReady = false;
 
-function initEscherBackground() {
+function initEscherBackground(scheme) {
 	const { enabled } = settings.escher;
 	if (!enabled) return;
+	const palette = scheme || settings.escher;
 	generateEscherPattern(escherBackground, {
 		width: canvasW,
 		height: canvasH,
-		color1: settings.escher.color1,
-		color2: settings.escher.color2,
+		color1: palette.color1,
+		color2: palette.color2,
 		maxAmplitude: settings.escher.maxAmplitude,
 	});
 	escherBackgroundReady = true;

@@ -101,7 +101,8 @@ function celebrateFill() {
 }
 
 function drawCelebration(time, celebrateTime) {
-	const msg = 'YOU FILLED THE BOARD!';
+	const msg =
+		celebrateTime < celebrateTime / 2 ? 'YOU FILLED THE BOARD!' : 'SPEED UP!';
 	const fadeIn = Math.min(1, celebrateTime / 0.4);
 	const fadeOut =
 		celebrateTime > 4.4
@@ -130,4 +131,3 @@ function drawCelebration(time, celebrateTime) {
 	ctx.fillText(msg, pos.x, pos.y);
 	ctx.restore();
 }
-
