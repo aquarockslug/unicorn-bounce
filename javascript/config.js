@@ -17,6 +17,12 @@ settings = {
 	powerupSpawnInterval: 5,
 	powerupBrushScale: 3,
 	maxPowerups: 2,
+	escher: {
+		enabled: true,
+		color1: '#562a51',
+		color2: '#2d445c',
+		maxAmplitude: 4,
+	},
 	// biome-ignore format: sfx
 	sfx: {
 		bounce: [0.25, 0.08, 300, 0.005, 0.04, 0.09, 1, 1, -80, 0, 0, 0, 0, 0, 0, 0, 0, 1],

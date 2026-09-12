@@ -6,6 +6,7 @@ M.files   = {
 	"javascript/lib/ZzFXMicro.min.js",
 	"javascript/engine.js",
 	"javascript/config.js",
+	"javascript/background.js",
 	"javascript/grid.js",
 	"javascript/effects.js",
 	"javascript/game.js",

@@ -147,6 +147,7 @@ function gameInit() {
 	};
 	cameraPos = grid.center();
 	setCanvasFixedSize(settings.screenResolution);
+	initEscherBackground();
 	const resumeAudio = () => {
 		if (typeof zzfxX !== 'undefined') zzfxX.resume();
 		window.removeEventListener('pointerdown', resumeAudio);
@@ -273,7 +274,7 @@ function drawPowerup(p, time) {
 }
 
 function gameRenderPost() {
-	drawSky(colors.sky.top, colors.sky.bottom);
+	drawBackground();
 	const { x: width, y: height } = gridSize;
 	const { x: sw, y: sh } = settings.squareSize;
 	const cells = gs.grid.values();
