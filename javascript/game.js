@@ -45,16 +45,12 @@ function updateUnicorn(unicorn, walls, dt) {
 	return { unicorn: next, removed };
 }
 
-const dirtyIndexes = [];
-let gridCanvas, gridCtx;
-
 function paintRibbon(grid, pos, brush) {
 	const { x: gx, y: gy } = gridSize;
 	if (grid.squareUnder(pos).index < 0) return 0;
 	const radius = (colors.rainbow.length * settings.ribbonThickness * brush) / 2;
 	const cx = pos.x / settings.squareSize.x - 0.5;
 	const cy = pos.y / settings.squareSize.y - 0.5;
-	const values = grid.values();
 	let painted = 0;
 	for (
 		let col = Math.max(0, Math.floor(cx - radius));
@@ -69,10 +65,9 @@ function paintRibbon(grid, pos, brush) {
 			const dc = col - cx;
 			const dr = row - cy;
 			if (dc * dc + dr * dr > radius * radius) continue;
-			const i = col * gy + row;
-			if (values[i].color === colors.background) {
-				values[i].color = colors.rainbow[(row + col) % colors.rainbow.length];
-				dirtyIndexes.push(i);
+			const cell = grid.cellAt(col, row);
+			if (cell.color === colors.background) {
+				cell.color = colors.rainbow[(row + col) % colors.rainbow.length];
 				painted++;
 			}
 		}
@@ -110,132 +105,6 @@ function spawnPowerup() {
 	};
 }
 
-const confetti = [];
-const randBetween = (a, b) => a + Math.random() * (b - a);
-const randomRainbow = () => colors.rainbow[(Math.random() * colors.rainbow.length) | 0];
-
-function confettiBurst(pos, count, speed) {
-	if (confetti.length > 500) return;
-	for (let i = 0; i < count; i++) {
-		const angle = randBetween(0, Math.PI * 2);
-		const spd = randBetween(speed * 0.25, speed);
-		confetti.push({
-			pos: vec2(pos.x, pos.y),
-			vel: vec2(Math.cos(angle) * spd, Math.sin(angle) * spd),
-			rot: randBetween(0, Math.PI * 2),
-			spin: randBetween(-10, 10),
-			size: randBetween(3, 7),
-			life: randBetween(0.8, 1.8),
-			maxLife: 1.8,
-			color: randomRainbow(),
-		});
-	}
-}
-
-function confettiRain() {
-	if (confetti.length > 500 || confetti.length % 3) return;
-	const { x: w } = gridSize;
-	confetti.push({
-		pos: vec2(randBetween(0, w * settings.squareSize.x), -10),
-		vel: vec2(randBetween(-15, 15), randBetween(50, 120)),
-		rot: randBetween(0, Math.PI * 2),
-		spin: randBetween(-8, 8),
-		size: randBetween(3, 6),
-		life: randBetween(2.5, 4),
-		maxLife: 4,
-		color: randomRainbow(),
-	});
-}
-
-function updateConfetti(dt) {
-	for (let i = confetti.length - 1; i >= 0; i--) {
-		const c = confetti[i];
-		c.life -= dt;
-		if (c.life <= 0) {
-			confetti.splice(i, 1);
-			continue;
-		}
-		c.vel.y += 90 * dt;
-		c.vel.x *= Math.max(0, 1 - dt * 0.6);
-		c.pos = c.pos.add(c.vel.multiply(vec2(dt, dt)));
-		c.rot += c.spin * dt;
-	}
-}
-
-function drawConfetti() {
-	for (const c of confetti) {
-		const a = Math.min(1, c.life / 0.4);
-		ctx.save();
-		ctx.globalAlpha = a;
-		ctx.translate(c.pos.x, c.pos.y);
-		ctx.rotate(c.rot);
-		ctx.scale(Math.max(0.2, Math.abs(Math.cos(c.rot * 3))), 1);
-		setFill(ctx, c.color);
-		ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size);
-		ctx.restore();
-	}
-}
-
-const hasAudio = typeof zzfx === 'function';
-function playS(params) {
-	if (hasAudio) zzfx(...params);
-}
-function playBounce() {
-	playS([0.25, 0.08, 300, 0.005, 0.04, 0.09, 1, 1, -80, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
-}
-function playPowerup() {
-	playS([0.6, 0.05, 660, 0.01, 0.08, 0.25, 1, 1, 140, 80, 0, 0, 0, 0, 0, 0, 0, 1]);
-}
-function playFanfare() {
-	const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
-	notes.forEach((f, i) => {
-		setTimeout(
-			() => playS([0.6, 0.03, f, 0.01, 0.14, 0.3, 1, 1, -60, 0, 0, 0, 0, 0, 0, 0, 0, 1]),
-			i * 95,
-		);
-	});
-}
-
-function celebrateFill() {
-	const { x: w, y: h } = gridSize;
-	const sw = w * settings.squareSize.x;
-	const sh = h * settings.squareSize.y;
-	confettiBurst(vec2(sw / 2, sh / 2), 140, 280);
-	confettiBurst(vec2(sw / 2, 0), 50, 200);
-	confettiBurst(vec2(sw / 2, sh), 50, 200);
-	confettiBurst(vec2(0, sh / 2), 50, 200);
-	confettiBurst(vec2(sw, sh / 2), 50, 200);
-	playFanfare();
-}
-
-function drawCelebration(time, celebrateTime) {
-	const msg = 'YOU FILLED THE BOARD!';
-	const fadeIn = Math.min(1, celebrateTime / 0.4);
-	const fadeOut = celebrateTime > 4.4 ? Math.max(0, (5 - celebrateTime) / 0.6) : 1;
-	const alpha = fadeIn * fadeOut;
-	if (!alpha) return;
-	const size = 34 + Math.sin(time * 9) * 5;
-	const { x: w, y: h } = gridSize;
-	const sw = w * settings.squareSize.x;
-	const sh = h * settings.squareSize.y;
-	const pos = vec2(sw / 2, sh / 2 - 60);
-	ctx.save();
-	ctx.translate(0, Math.sin(time * 5) * 4);
-	ctx.globalAlpha = alpha * 0.85;
-	paletteColor(time * 0.35, waveColor);
-	setFill(ctx, waveColor);
-	ctx.font = `bold ${size}px monospace`;
-	ctx.textAlign = 'center';
-	ctx.textBaseline = 'middle';
-	const tw = ctx.measureText(msg).width;
-	ctx.fillRect(pos.x - tw / 2 - 12, pos.y - size / 2 - 8, tw + 24, size + 16);
-	ctx.globalAlpha = alpha;
-	paletteColor(time * 0.9, waveColor);
-	setFill(ctx, waveColor);
-	ctx.fillText(msg, pos.x, pos.y);
-	ctx.restore();
-}
-
 const unicornSprite = document.createElement('canvas');
 unicornSprite.width = 640;
 unicornSprite.height = 480;
@@ -255,7 +124,7 @@ function gameInit() {
 		Math.floor(settings.screenResolution.x / settings.squareSize.x),
 		Math.floor(settings.screenResolution.y / settings.squareSize.y),
 	);
-	const grid = Grid(gridSize, vec2(0), colors.background);
+	const grid = Grid(gridSize, colors.background);
 	gs = {
 		grid,
 		walls: [],
@@ -278,10 +147,6 @@ function gameInit() {
 	};
 	cameraPos = grid.center();
 	setCanvasFixedSize(settings.screenResolution);
-	gridCanvas = document.createElement('canvas');
-	gridCanvas.width = gridSize.x * settings.squareSize.x;
-	gridCanvas.height = gridSize.y * settings.squareSize.y;
-	gridCtx = gridCanvas.getContext('2d');
 	const resumeAudio = () => {
 		if (typeof zzfxX !== 'undefined') zzfxX.resume();
 		window.removeEventListener('pointerdown', resumeAudio);
@@ -361,15 +226,13 @@ function gameUpdate(dt) {
 	let filled = gs.filled;
 	let justFilled = false;
 	if (!filled) {
-		const values = gs.grid.values();
-		let missing = 0;
-		for (const v of values) if (v.color === colors.background) missing++;
-		if (missing <= values.length * (1 - settings.fillThreshold)) {
-			for (let i = 0; i < values.length; i++) {
-				if (values[i].color !== colors.background) continue;
-				values[i].color =
-					colors.rainbow[(i % gridSize.y + ((i / gridSize.y) | 0)) % colors.rainbow.length];
-				dirtyIndexes.push(i);
+		const cells = gs.grid.values();
+		const missing = cells.length - gs.filledCount - painted;
+		if (missing <= cells.length * (1 - settings.fillThreshold)) {
+			for (const cell of cells) {
+				if (cell.color !== colors.background) continue;
+				cell.color =
+					colors.rainbow[(cell.row + cell.col) % colors.rainbow.length];
 				painted++;
 			}
 			filled = true;
@@ -413,25 +276,24 @@ function gameRenderPost() {
 	drawSky(colors.sky.top, colors.sky.bottom);
 	const { x: width, y: height } = gridSize;
 	const { x: sw, y: sh } = settings.squareSize;
-	const positions = gs.grid.positions();
+	const cells = gs.grid.values();
 
 	if (gs.filled) {
-		for (let i = 0; i < positions.length; i++) {
+		for (const cell of cells) {
 			const hue =
-				((i % height + ((i / height) | 0)) / (width + height) +
+				((cell.row + cell.col) / (width + height) +
 					gs.time * settings.celebrationSpeed) %
 				1;
 			paletteColor(hue, waveColor);
-			drawRect(positions[i], settings.squareSize, waveColor);
+			setFill(ctx, waveColor);
+			ctx.fillRect(cell.col * sw, cell.row * sh, sw, sh);
 		}
 	} else {
-		const values = gs.grid.values();
-		for (const i of dirtyIndexes) {
-			setFill(gridCtx, values[i].color);
-			gridCtx.fillRect(positions[i].x - sw / 2, positions[i].y - sh / 2, sw, sh);
+		for (const cell of cells) {
+			if (cell.color === colors.background) continue;
+			setFill(ctx, cell.color);
+			ctx.fillRect(cell.col * sw, cell.row * sh, sw, sh);
 		}
-		dirtyIndexes.length = 0;
-		ctx.drawImage(gridCanvas, 0, 0);
 	}
 
 	for (const wall of gs.walls)

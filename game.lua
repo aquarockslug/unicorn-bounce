@@ -7,6 +7,7 @@ M.files   = {
 	"javascript/engine.js",
 	"javascript/config.js",
 	"javascript/grid.js",
+	"javascript/effects.js",
 	"javascript/game.js",
 }
 

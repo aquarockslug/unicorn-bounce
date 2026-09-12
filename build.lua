@@ -38,6 +38,8 @@ function M.deploy(game)
 
 	os.execute "minify --html-keep-document-tags -i dist/index.html"
 
+	os.execute("zip -j dist/game.zip " .. game.output)
+
 	if game.publish and game.channel then
 		os.execute("butler push " .. game.output .. " " .. game.channel)
 	end
