@@ -149,7 +149,7 @@ function gameInit() {
 	const board = (gs?.board ?? -1) + 1;
 	for (let i = 0; i < board; i++)
 		setTimeout(() => playS(settings.sfx.reset), i * 150);
-	const speedMultiplier = 1 + board * 0.5;
+	const speedMultiplier = 1 + board * 0.25;
 	const prev = gs?.unicorn;
 	const baseVel = settings.unicornVelocity;
 	const baseSpeed = Math.hypot(baseVel.x, baseVel.y) || 1;
@@ -293,6 +293,7 @@ function gameUpdate(dt) {
 			justFilled = true;
 		}
 	}
+	let decayed = 0;
 	for (const cell of gs.grid.values()) {
 		if (cell.color === colors.background) continue;
 		const neighbors = [
@@ -305,9 +306,12 @@ function gameUpdate(dt) {
 		const decayChance =
 			settings.cellDecayRate *
 			(exposed ? settings.cellDecayEdgeBoost : 1) *
-			(gs.board + 1) *
+			((gs.board + 1) * 1.75) *
 			dt;
-		if (Math.random() < decayChance) cell.color = colors.background;
+		if (Math.random() < decayChance) {
+			cell.color = colors.background;
+			decayed++;
+		}
 	}
 	if (justFilled) celebrateFill();
 	if (filled && Math.random() < dt * 30) confettiRain();
@@ -324,7 +328,7 @@ function gameUpdate(dt) {
 		lastRibbonPos: unicorn.pos,
 		time,
 		filled,
-		filledCount: gs.filledCount + painted,
+		filledCount: gs.filledCount + painted - decayed,
 		celebrateTime,
 		powerups,
 		spawnTimer: gs.spawnTimer,

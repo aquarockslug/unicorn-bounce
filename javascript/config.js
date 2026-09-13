@@ -4,7 +4,7 @@ settings = {
 	screenResolution: vec2(640, 480),
 	squareSize: vec2(4),
 	ribbonThickness: 2,
-	fillThreshold: 0.99,
+	fillThreshold: 0.95,
 	celebrationSpeed: 0.2,
 	celebrateLength: 5,
 	unicornVelocity: vec2(3, 0),
