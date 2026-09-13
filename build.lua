@@ -19,7 +19,7 @@ function M.deploy(game)
 		end
 	end
 
-	local html = "<!doctype html><body>\n"
+	local html = "<!doctype html><body style='width: 680px;height: 400px;'>\n"
 	for _, s in ipairs(scripts) do
 		html = html .. "  <script>\n" .. s .. "\n  </script>\n"
 	end

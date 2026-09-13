@@ -14,7 +14,7 @@ M.files   = {
 
 M.output  = "dist/index.html"
 
-M.publish = true
+M.publish = false
 M.channel = "aquarock/unicorn-bounce:html5"
 
 return M
